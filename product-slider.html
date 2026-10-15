@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Product slider</title>
+  <!--
+    SQUARESPACE — do not paste this whole file into a code block.
+
+    The five product blocks stay where they are. This slider finds them
+    and lays them out. A code block cannot wrap blocks that already exist,
+    and JavaScript inside a code block is easy for Squarespace to strip.
+
+    Paste the <style> and <script> from this page into:
+    Settings → Advanced → Code Injection → Footer
+
+    Leave the product blocks in one section, in any order.
+    The slider always starts on the 10k challenge.
+
+    Do not also paste this into Custom CSS. One copy is enough.
+    The slider does not run while you are editing the page.
+  -->
+  <style>
+    .vq-slider {
+      --vq-accent: #60fbaf;
+      --vq-ink: #042117;
+      --vq-card: #141414;
+      --vq-line: rgba(255, 255, 255, 0.16);
+      --vq-muted: #a3a3a3;
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .vq-track {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
+      width: 100%;
+      margin: 0;
+      padding: 4px 0 8px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .vq-track::-webkit-scrollbar { display: none; }
+
+    .vq-slider .vq-slide,
+    .vq-slider .fe-block {
+      flex: 0 0 100%;
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      height: auto !important;
+      margin: 0 !important;
+      position: relative !important;
+      inset: auto !important;
+      grid-area: auto !important;
+      float: none !important;
+      transform: none !important;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+
+    .vq-slider .sqs-block,
+    .vq-slider .sqs-block-content,
+    .vq-slider .product-block,
+    .vq-slider .product-block-content {
+      width: 100% !important;
+      max-width: none !important;
+      height: 100% !important;
+      margin: 0 !important;
+      position: relative !important;
+    }
+
+    .vq-slider .product-block {
+      display: flex !important;
+      flex-direction: column;
+      background: var(--vq-card) !important;
+      border: 1px solid var(--vq-line);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .vq-slider .product-block-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 0 !important;
+    }
+
+    .vq-slider .image-container {
+      position: relative;
+    }
+
+    .vq-slider .image-styles-wrapper {
+      display: block;
+      position: relative;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      border-radius: 0;
+      background: #101010;
+      pointer-events: none !important;
+      cursor: default !important;
+    }
+
+    .vq-slider .image-styles-wrapper img {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
+
+    .vq-slider .sqs-product-mark-wrapper,
+    .vq-slider .product-status-link {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 2;
+      width: auto !important;
+      height: auto !important;
+      pointer-events: none !important;
+    }
+
+    .vq-slider .product-mark.sale {
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      padding: 6px 12px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--vq-accent) !important;
+      color: var(--vq-ink) !important;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      text-transform: none;
+    }
+
+    .vq-slider .productDetails {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 16px 20px;
+      text-align: center;
+    }
+
+    .vq-slider a.product-title,
+    .vq-slider .product-title {
+      display: block;
+      margin: 0;
+      color: #fff !important;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      text-decoration: none !important;
+      pointer-events: none !important;
+      cursor: default !important;
+    }
+
+    .vq-slider .product-price {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: baseline;
+      gap: 8px;
+      margin: 0;
+      color: #fff !important;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .vq-slider .original-price {
+      color: var(--vq-muted) !important;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: line-through;
+    }
+
+    .vq-slider a[href*="/shop/p/"] {
+      pointer-events: none !important;
+      cursor: default !important;
+    }
+
+    .vq-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .vq-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .vq-dot {
+      width: 7px;
+      height: 7px;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.28);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .vq-dot.is-active {
+      width: 18px;
+      background: var(--vq-accent);
+    }
+
+    .vq-dot:focus-visible,
+    .vq-arrow:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    .vq-arrow {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--vq-line);
+      border-radius: 999px;
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .vq-arrow[disabled] {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .vq-arrow svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+    }
+
+    @media (min-width: 700px) {
+      .vq-slider .vq-slide,
+      .vq-slider .fe-block {
+        flex-basis: calc((100% - 16px) / 2);
+        width: calc((100% - 16px) / 2) !important;
+      }
+
+      .vq-arrow { display: inline-flex; }
+    }
+
+    @media (min-width: 1100px) {
+      .vq-slider .vq-slide,
+      .vq-slider .fe-block {
+        flex-basis: calc((100% - 32px) / 3);
+        width: calc((100% - 32px) / 3) !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .vq-track { scroll-behavior: auto; }
+    }
+
+    /* Local preview only. Squarespace already supplies the page background. */
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+    }
+
+    .preview {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 48px 16px 64px;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview">
+    <section>
+      <div class="fluid-engine">
+        <div class="fe-block fe-block-yui_3_17_2_1_1792019573642_531">
+          <div class="sqs-block" id="block-yui_3_17_2_1_1792019573642_531">
+            <div class="product-block">
+              <div class="product-block-content">
+                <div class="image-container">
+                  <a href="/shop/p/10k-challenge" class="image-styles-wrapper">
+                    <img alt="10k Challenge" src="https://images.squarespace-cdn.com/content/v1/6acfad7bfb92a361590f22fd/3510e042-2504-4581-8d76-e02d7b354369/10kvanq.png">
+                  </a>
+                  <a href="/shop/p/10k-challenge" class="product-status-link">
+                    <div class="sqs-product-mark-wrapper"><div class="product-mark sale">Sale</div></div>
+                  </a>
+                </div>
+                <div class="productDetails">
+                  <a href="/shop/p/10k-challenge" class="product-title">10k Challenge</a>
+                  <div class="product-price">US$49.00 <span class="original-price">US$99.00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fe-block fe-block-e749061536072ca7a477">
+          <div class="sqs-block" id="block-e749061536072ca7a477">
+            <div class="product-block">
+              <div class="product-block-content">
+                <div class="image-container">
+                  <a href="/shop/p/25k-challenge" class="image-styles-wrapper">
+                    <img alt="25k Challenge" src="https://images.squarespace-cdn.com/content/v1/6acfad7bfb92a361590f22fd/3510e042-2504-4581-8d76-e02d7b354369/10kvanq.png">
+                  </a>
+                  <a href="/shop/p/25k-challenge" class="product-status-link">
+                    <div class="sqs-product-mark-wrapper"><div class="product-mark sale">Sale</div></div>
+                  </a>
+                </div>
+                <div class="productDetails">
+                  <a href="/shop/p/25k-challenge" class="product-title">25k Challenge</a>
+                  <div class="product-price">US$149.00 <span class="original-price">US$199.00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fe-block fe-block-52afccbe1e7bc4af2ad1">
+          <div class="sqs-block" id="block-52afccbe1e7bc4af2ad1">
+            <div class="product-block">
+              <div class="product-block-content">
+                <div class="image-container">
+                  <a href="/shop/p/50k-challenge" class="image-styles-wrapper">
+                    <img alt="50k Challenge" src="https://images.squarespace-cdn.com/content/v1/6acfad7bfb92a361590f22fd/3510e042-2504-4581-8d76-e02d7b354369/10kvanq.png">
+                  </a>
+                  <a href="/shop/p/50k-challenge" class="product-status-link">
+                    <div class="sqs-product-mark-wrapper"><div class="product-mark sale">Sale</div></div>
+                  </a>
+                </div>
+                <div class="productDetails">
+                  <a href="/shop/p/50k-challenge" class="product-title">50k Challenge</a>
+                  <div class="product-price">US$249.00 <span class="original-price">US$299.00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fe-block fe-block-3518851e187dc811896e">
+          <div class="sqs-block" id="block-3518851e187dc811896e">
+            <div class="product-block">
+              <div class="product-block-content">
+                <div class="image-container">
+                  <a href="/shop/p/100k-challenge" class="image-styles-wrapper">
+                    <img alt="100k Challenge" src="https://images.squarespace-cdn.com/content/v1/6acfad7bfb92a361590f22fd/3510e042-2504-4581-8d76-e02d7b354369/10kvanq.png">
+                  </a>
+                  <a href="/shop/p/100k-challenge" class="product-status-link">
+                    <div class="sqs-product-mark-wrapper"><div class="product-mark sale">Sale</div></div>
+                  </a>
+                </div>
+                <div class="productDetails">
+                  <a href="/shop/p/100k-challenge" class="product-title">100k Challenge</a>
+                  <div class="product-price">US$399.00 <span class="original-price">US$499.00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fe-block fe-block-7cfb2d800bb6a3b2bfbd">
+          <div class="sqs-block" id="block-7cfb2d800bb6a3b2bfbd">
+            <div class="product-block">
+              <div class="product-block-content">
+                <div class="image-container">
+                  <a href="/shop/p/200k-challenge" class="image-styles-wrapper">
+                    <img alt="200k Challenge" src="https://images.squarespace-cdn.com/content/v1/6acfad7bfb92a361590f22fd/3510e042-2504-4581-8d76-e02d7b354369/10kvanq.png">
+                  </a>
+                  <a href="/shop/p/200k-challenge" class="product-status-link">
+                    <div class="sqs-product-mark-wrapper"><div class="product-mark sale">Sale</div></div>
+                  </a>
+                </div>
+                <div class="productDetails">
+                  <a href="/shop/p/200k-challenge" class="product-title">200k Challenge</a>
+                  <div class="product-price">US$499.00 <span class="original-price">US$599.00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var IDS = [
+        "block-yui_3_17_2_1_1792019573642_531",
+        "block-e749061536072ca7a477",
+        "block-52afccbe1e7bc4af2ad1",
+        "block-3518851e187dc811896e",
+        "block-7cfb2d800bb6a3b2bfbd"
+      ];
+
+      function editing() {
+        var body = document.body;
+        if (!body) return false;
+        return body.classList.contains("sqs-edit-mode")
+          || body.classList.contains("sqs-edit-mode-active")
+          || window.location.pathname.indexOf("/config") === 0;
+      }
+
+      function disableProductLinks(root) {
+        var links = root.querySelectorAll("a.product-title, a.image-styles-wrapper, a.product-status-link, a[href*='/shop/p/']");
+        Array.prototype.forEach.call(links, function (link) {
+          if (link.closest(".sqs-add-to-cart-button-wrapper")) return;
+          link.removeAttribute("href");
+          link.setAttribute("tabindex", "-1");
+          link.setAttribute("aria-disabled", "true");
+        });
+        root.addEventListener("click", function (event) {
+          var link = event.target.closest("a");
+          if (!link || !root.contains(link)) return;
+          if (link.closest(".sqs-add-to-cart-button, .sqs-add-to-cart-button-wrapper")) return;
+          if (link.classList.contains("product-title") || link.classList.contains("image-styles-wrapper") || link.classList.contains("product-status-link") || (link.getAttribute("href") || "").indexOf("/shop/p/") !== -1) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }, true);
+      }
+
+      function slideStep(track) {
+        var slide = track.querySelector(".vq-slide");
+        if (!slide) return track.clientWidth;
+        var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0;
+        return slide.getBoundingClientRect().width + gap;
+      }
+
+      function init(blocks) {
+        if (document.querySelector(".vq-slider")) return;
+
+        var slides = blocks.map(function (block) {
+          return block.closest(".fe-block") || block;
+        });
+        var engine = slides[0].closest(".fluid-engine");
+        var slider = document.createElement("div");
+        var track = document.createElement("div");
+        var nav = document.createElement("div");
+        var prev = document.createElement("button");
+        var next = document.createElement("button");
+        var dots = document.createElement("div");
+
+        slider.className = "vq-slider";
+        slider.setAttribute("role", "region");
+        slider.setAttribute("aria-roledescription", "carousel");
+        slider.setAttribute("aria-label", "Challenge plans");
+        track.className = "vq-track";
+        track.tabIndex = 0;
+        nav.className = "vq-nav";
+        dots.className = "vq-dots";
+
+        prev.className = "vq-arrow vq-prev";
+        prev.type = "button";
+        prev.setAttribute("aria-label", "Previous plan");
+        prev.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+
+        next.className = "vq-arrow vq-next";
+        next.type = "button";
+        next.setAttribute("aria-label", "Next plan");
+        next.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>';
+
+        slides.forEach(function (slide, index) {
+          slide.classList.add("vq-slide");
+          track.appendChild(slide);
+          var dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "vq-dot" + (index === 0 ? " is-active" : "");
+          dot.setAttribute("aria-label", "Show plan " + (index + 1));
+          if (index === 0) dot.setAttribute("aria-current", "true");
+          dots.appendChild(dot);
+        });
+
+        nav.appendChild(prev);
+        nav.appendChild(dots);
+        nav.appendChild(next);
+        slider.appendChild(track);
+        slider.appendChild(nav);
+        disableProductLinks(slider);
+
+        var anchor = engine || slides[0];
+        anchor.parentNode.insertBefore(slider, anchor);
+        if (engine) engine.style.display = "none";
+
+        var dotButtons = Array.prototype.slice.call(dots.children);
+
+        function activeIndex() {
+          var origin = track.getBoundingClientRect().left;
+          var best = Infinity;
+          var index = 0;
+          slides.forEach(function (slide, i) {
+            var distance = Math.abs(slide.getBoundingClientRect().left - origin);
+            if (distance < best) {
+              best = distance;
+              index = i;
+            }
+          });
+          return index;
+        }
+
+        function update() {
+          var index = activeIndex();
+          var max = track.scrollWidth - track.clientWidth - 2;
+          dotButtons.forEach(function (dot, i) {
+            var on = i === index;
+            dot.classList.toggle("is-active", on);
+            if (on) dot.setAttribute("aria-current", "true");
+            else dot.removeAttribute("aria-current");
+          });
+          prev.disabled = track.scrollLeft <= 2;
+          next.disabled = track.scrollLeft >= max;
+        }
+
+        function goTo(index) {
+          var slide = slides[index];
+          if (!slide) return;
+          var left = track.scrollLeft + (slide.getBoundingClientRect().left - track.getBoundingClientRect().left);
+          track.scrollTo({
+            left: left,
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+          });
+        }
+
+        prev.addEventListener("click", function () {
+          track.scrollBy({ left: -slideStep(track), behavior: "smooth" });
+        });
+        next.addEventListener("click", function () {
+          track.scrollBy({ left: slideStep(track), behavior: "smooth" });
+        });
+        dotButtons.forEach(function (dot, index) {
+          dot.addEventListener("click", function () { goTo(index); });
+        });
+        track.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+        update();
+      }
+
+      function boot(tries) {
+        if (editing()) return;
+        var blocks = IDS.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+        if (blocks.length < IDS.length && tries < 25) {
+          window.setTimeout(function () { boot(tries + 1); }, 200);
+          return;
+        }
+        if (!blocks.length) return;
+        init(blocks);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () { boot(0); });
+      } else {
+        boot(0);
+      }
+    })();
+  </script>
+</body>
+</html>

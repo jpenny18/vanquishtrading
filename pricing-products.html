@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Pricing from product blocks</title>
+  <!--
+    SQUARESPACE
+    Do not paste this whole page into a code block.
+
+    Leave the five product blocks in one section, and turn on the
+    purchase button for each block. This rebuilds those blocks into
+    the pricing table. Start now is that purchase button.
+
+    Paste the <style> and the <script> into:
+    Settings → Advanced → Code Injection → Footer
+
+    It does not run while the page is in edit mode.
+  -->
+  <style>
+    .pricing,
+    .pricing *,
+    .pricing *::before,
+    .pricing *::after { box-sizing: border-box; }
+
+    .pricing {
+      --bg: #000;
+      --card: #141414;
+      --accent: #60fbaf;
+      --accent-ink: #042117;
+      --text: #fff;
+      --muted: #a3a3a3;
+      --line: rgba(255, 255, 255, 0.1);
+      --card-line: rgba(255, 255, 255, 0.16);
+      container-type: inline-size;
+      container-name: pricing;
+      width: 100%;
+      padding: 28px 16px 40px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .pricing p,
+    .pricing h1,
+    .pricing h2 { margin: 0; }
+
+    .pricing-intro {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      max-width: 720px;
+      margin: 0 auto 18px;
+      text-align: center;
+    }
+
+    .plan-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .pricing-title {
+      font-size: clamp(30px, 2vw + 20px, 44px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+    }
+
+    .pricing-sub {
+      max-width: 34em;
+      color: #b5b5b5;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .pricing .icon {
+      width: 18px;
+      height: 18px;
+      flex: none;
+      display: block;
+    }
+
+    .pricing-grid {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
+      width: 100%;
+      margin: 0;
+      padding: 2px 0 4px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .pricing-grid::-webkit-scrollbar { display: none; }
+
+    .plan-nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 auto 16px;
+    }
+
+    .plan-dot {
+      width: 7px;
+      height: 7px;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.28);
+      cursor: pointer;
+    }
+
+    .plan-dot.is-active { width: 18px; background: var(--accent); }
+
+    .plan-dot:focus-visible,
+    .pricing .sqs-add-to-cart-button:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    .pricing .labels { display: none; }
+
+    .pricing .card {
+      position: relative !important;
+      display: flex !important;
+      flex: 0 0 100%;
+      flex-direction: column;
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      height: auto !important;
+      margin: 14px 0 0 !important;
+      padding: 22px 16px 16px !important;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      background: var(--card) !important;
+      border: 1px solid var(--card-line) !important;
+      border-radius: 20px !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      color: #fff !important;
+      overflow: visible !important;
+      transform: none !important;
+    }
+
+    .pricing .card[data-balance="10000"] { order: 1; }
+    .pricing .card[data-balance="25000"] { order: 2; }
+    .pricing .card[data-balance="50000"] { order: 3; }
+    .pricing .card[data-balance="100000"] { order: 4; }
+    .pricing .card[data-balance="200000"] { order: 5; }
+
+    .pricing .card.featured {
+      padding-top: 26px !important;
+      border-color: rgba(96, 251, 175, 0.8) !important;
+      background:
+        radial-gradient(90% 42% at 50% 0%, rgba(96, 251, 175, 0.38), rgba(96, 251, 175, 0.08) 46%, transparent 72%),
+        var(--card) !important;
+      box-shadow: inset 0 1px 0 rgba(96, 251, 175, 0.35), 0 18px 50px rgba(96, 251, 175, 0.07);
+    }
+
+    .pricing .product-block-content { display: contents; }
+
+    /* Squarespace author CSS beats the hidden attribute, so the product
+       image was still a grid row. Hide every original child except the
+       purchase control. */
+    .pricing .product-block-content > :not(.card-head):not(.metric):not(.price-cell):not(.buy):not(.product-purchase-controls-wrapper):not(.sqs-add-to-cart-button-wrapper),
+    .pricing .product-block .image-container,
+    .pricing .product-block .productDetails,
+    .pricing .product-block .product-title,
+    .pricing .product-block .product-price,
+    .pricing .product-block .sqs-product-mark-wrapper,
+    .pricing .product-block .product-mark,
+    .pricing .product-block .product-status-link,
+    .pricing .product-block img,
+    .pricing .product-block picture,
+    .pricing .vq-off {
+      display: none !important;
+      visibility: hidden !important;
+      position: absolute !important;
+      width: 0 !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+
+    .pricing .badge {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .pricing .card-head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-bottom: 16px;
+    }
+
+    .pricing .eyebrow { color: #c8c8c8; font-size: 13px; font-weight: 500; }
+
+    .pricing .balance {
+      margin-top: 4px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pricing .metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 52px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .pricing .name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: #f2f2f2;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .pricing .name .icon { color: #e8e8e8; }
+
+    .pricing .value {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pricing .value.has-hint {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pricing .pct {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .pricing .dollars {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .pricing .hint { color: var(--muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
+
+    .pricing .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(96, 251, 175, 0.14);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .pricing .price-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: auto;
+      padding-top: 16px;
+      text-align: center;
+    }
+
+    .pricing .fee-note {
+      max-width: 180px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .pricing .price {
+      color: #fff;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pricing .price-was {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: line-through;
+    }
+
+    .pricing .buy,
+    .pricing .product-purchase-controls-wrapper,
+    .pricing .sqs-add-to-cart-button-wrapper {
+      display: block !important;
+      visibility: visible !important;
+      width: 100%;
+      margin: 14px 0 0 !important;
+      padding: 0 !important;
+    }
+
+    .pricing .product-quantity-input-wrapper,
+    .pricing .product-quantity-input { display: none !important; }
+
+    .pricing .sqs-add-to-cart-button {
+      appearance: none !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 100% !important;
+      min-height: 48px !important;
+      margin: 0 !important;
+      padding: 12px 16px !important;
+      border: 0 !important;
+      border-radius: 12px !important;
+      background: var(--accent) !important;
+      color: var(--accent-ink) !important;
+      box-shadow: none !important;
+      font-family: inherit !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.01em !important;
+      line-height: 1 !important;
+      text-transform: none !important;
+      cursor: pointer !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .pricing .sqs-add-to-cart-button-inner,
+    .pricing .add-to-cart-text {
+      color: var(--accent-ink) !important;
+      font: inherit !important;
+      font-weight: 700 !important;
+      text-transform: none !important;
+    }
+
+    .pricing .sqs-add-to-cart-button:active { background: #35e696 !important; }
+
+    @media (hover: hover) and (pointer: fine) {
+      .pricing .sqs-add-to-cart-button:hover { background: #49f0a3 !important; }
+    }
+
+    @media (max-width: 359px) {
+      .pricing { padding-left: 10px; padding-right: 10px; }
+    }
+
+    @container pricing (max-width: 340px) {
+      .pricing .card { padding-left: 12px !important; padding-right: 12px !important; }
+      .pricing .metric { gap: 8px; }
+      .pricing .name { font-size: 13px; gap: 8px; }
+      .pricing .pct { font-size: 14px; }
+      .pricing .balance { font-size: 30px; }
+      .pricing .price { font-size: 30px; }
+      .pricing .icon { width: 16px; height: 16px; }
+    }
+
+    @container pricing (min-width: 700px) {
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        max-width: 840px;
+        margin: 0 auto;
+        padding: 0;
+        overflow: visible;
+        scroll-snap-type: none;
+      }
+
+      .pricing .card {
+        flex: initial;
+        width: 100% !important;
+        margin-top: 0 !important;
+        scroll-snap-align: none;
+        order: 0;
+      }
+
+      .pricing .card.featured { order: -1; }
+      .pricing-intro { margin-bottom: 36px; }
+      .plan-nav { display: none; }
+    }
+
+    @container pricing (min-width: 1060px) {
+      @supports (grid-template-rows: subgrid) {
+        .pricing-grid {
+          grid-template-columns: 196px repeat(5, minmax(0, 1fr));
+          grid-template-rows: 112px repeat(7, 64px) 92px 72px;
+          column-gap: 12px;
+          row-gap: 0;
+          max-width: 1180px;
+        }
+
+        .pricing .labels {
+          display: grid;
+          grid-column: 1;
+          grid-row: 1 / -1;
+          grid-template-rows: subgrid;
+        }
+
+        .pricing .labels > * {
+          display: flex;
+          align-items: center;
+          min-width: 0;
+        }
+
+        .pricing .label {
+          gap: 10px;
+          color: #f3f3f3;
+          font-size: 14px;
+          font-weight: 600;
+          line-height: 1.25;
+        }
+
+        .pricing .label .icon { color: #dedede; }
+
+        .pricing .labels .fee {
+          max-width: 150px;
+          color: var(--muted);
+          font-size: 13px;
+          font-weight: 500;
+          line-height: 1.35;
+        }
+
+        .pricing .card,
+        .pricing .card.featured,
+        .pricing .card[data-balance] {
+          display: grid !important;
+          grid-row: 1 / -1 !important;
+          grid-template-rows: subgrid;
+          width: auto !important;
+          margin: 0 !important;
+          order: 0 !important;
+          padding: 0 !important;
+        }
+
+        .pricing .card[data-balance="200000"] { grid-column: 2 !important; }
+        .pricing .card[data-balance="100000"] { grid-column: 3 !important; }
+        .pricing .card[data-balance="50000"] { grid-column: 4 !important; }
+        .pricing .card[data-balance="25000"] { grid-column: 5 !important; }
+        .pricing .card[data-balance="10000"] { grid-column: 6 !important; }
+
+        .pricing .card-head,
+        .pricing .metric,
+        .pricing .price-cell { padding-left: 10px; padding-right: 10px; }
+        .pricing .card-head { padding-bottom: 0; }
+        .pricing .balance { font-size: 26px; }
+
+        .pricing .metric {
+          justify-content: center;
+          min-height: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+          border-top: 0;
+        }
+
+        .pricing .metric .name {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
+        .pricing .value,
+        .pricing .value.has-hint {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .pricing .price-cell { margin: 0; padding-top: 0; }
+        .pricing .price { font-size: 28px; }
+
+        .pricing .fee-note {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+        }
+
+        .pricing .buy,
+        .pricing .product-purchase-controls-wrapper {
+          align-self: center;
+          justify-self: center;
+          width: calc(100% - 28px) !important;
+          margin: 0 auto !important;
+        }
+
+        .pricing .sqs-add-to-cart-button { min-height: 46px !important; }
+        .pricing .card { transition: border-color 160ms ease; }
+        .pricing .card:hover { border-color: rgba(255, 255, 255, 0.22) !important; }
+        .pricing .card.featured:hover { border-color: var(--accent) !important; }
+      }
+    }
+
+    @container pricing (min-width: 1280px) {
+      @supports (grid-template-rows: subgrid) {
+        .pricing .balance { font-size: 30px; }
+        .pricing .price { font-size: 32px; }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pricing-grid { scroll-behavior: auto; }
+      .pricing .card { transition: none; }
+    }
+
+    body { margin: 0; background: #000; }
+    .preview { max-width: 1180px; margin: 0 auto; }
+  </style>
+</head>
+<body data-preview="local">
+  <div class="preview">
+    <section>
+      <div class="fluid-engine" id="source-products">
+        <div class="fe-block"><div class="sqs-block" id="block-yui_3_17_2_1_1792019573642_531"><div class="product-block" data-product='{"title":"10k Challenge","onSale":true,"price":{"value":"99.00"},"salePrice":{"value":"49.00"}}'><div class="product-block-content"><div class="image-container" style="display:block !important"><a class="image-styles-wrapper" href="/shop/p/challenge"><img alt="Challenge card" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420'%3E%3Crect width='300' height='420' fill='%23033'/%3E%3Ctext x='20' y='40' fill='%2360fbaf' font-size='24'%3EVANQUISH%3C/text%3E%3C/svg%3E"></a></div><a class="product-title" href="/shop/p/10k-challenge">10k Challenge</a><div class="productDetails"><div class="product-purchase-controls-wrapper"><button type="button" class="sqs-add-to-cart-button"><span class="sqs-add-to-cart-button-inner"><span class="add-to-cart-text">Purchase</span></span></button></div></div></div></div></div></div>
+        <div class="fe-block"><div class="sqs-block" id="block-e749061536072ca7a477"><div class="product-block" data-product='{"title":"25k Challenge","onSale":true,"price":{"value":"199.00"},"salePrice":{"value":"149.00"}}'><div class="product-block-content"><div class="image-container" style="display:block !important"><a class="image-styles-wrapper" href="/shop/p/challenge"><img alt="Challenge card" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420'%3E%3Crect width='300' height='420' fill='%23033'/%3E%3Ctext x='20' y='40' fill='%2360fbaf' font-size='24'%3EVANQUISH%3C/text%3E%3C/svg%3E"></a></div><a class="product-title" href="/shop/p/25k-challenge">25k Challenge</a><div class="productDetails"><div class="product-purchase-controls-wrapper"><button type="button" class="sqs-add-to-cart-button"><span class="sqs-add-to-cart-button-inner"><span class="add-to-cart-text">Purchase</span></span></button></div></div></div></div></div></div>
+        <div class="fe-block"><div class="sqs-block" id="block-52afccbe1e7bc4af2ad1"><div class="product-block" data-product='{"title":"50k Challenge","onSale":true,"price":{"value":"319.00"},"salePrice":{"value":"249.00"}}'><div class="product-block-content"><div class="image-container" style="display:block !important"><a class="image-styles-wrapper" href="/shop/p/challenge"><img alt="Challenge card" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420'%3E%3Crect width='300' height='420' fill='%23033'/%3E%3Ctext x='20' y='40' fill='%2360fbaf' font-size='24'%3EVANQUISH%3C/text%3E%3C/svg%3E"></a></div><a class="product-title" href="/shop/p/50k-challenge">50k Challenge</a><div class="productDetails"><div class="product-purchase-controls-wrapper"><button type="button" class="sqs-add-to-cart-button"><span class="sqs-add-to-cart-button-inner"><span class="add-to-cart-text">Purchase</span></span></button></div></div></div></div></div></div>
+        <div class="fe-block"><div class="sqs-block" id="block-3518851e187dc811896e"><div class="product-block" data-product='{"title":"100k Challenge","onSale":true,"price":{"value":"499.00"},"salePrice":{"value":"399.00"}}'><div class="product-block-content"><div class="image-container" style="display:block !important"><a class="image-styles-wrapper" href="/shop/p/challenge"><img alt="Challenge card" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420'%3E%3Crect width='300' height='420' fill='%23033'/%3E%3Ctext x='20' y='40' fill='%2360fbaf' font-size='24'%3EVANQUISH%3C/text%3E%3C/svg%3E"></a></div><a class="product-title" href="/shop/p/100k-challenge">100k Challenge</a><div class="productDetails"><div class="product-purchase-controls-wrapper"><button type="button" class="sqs-add-to-cart-button"><span class="sqs-add-to-cart-button-inner"><span class="add-to-cart-text">Purchase</span></span></button></div></div></div></div></div></div>
+        <div class="fe-block"><div class="sqs-block" id="block-7cfb2d800bb6a3b2bfbd"><div class="product-block" data-product='{"title":"200k Challenge","onSale":true,"price":{"value":"599.00"},"salePrice":{"value":"499.00"}}'><div class="product-block-content"><div class="image-container" style="display:block !important"><a class="image-styles-wrapper" href="/shop/p/challenge"><img alt="Challenge card" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420'%3E%3Crect width='300' height='420' fill='%23033'/%3E%3Ctext x='20' y='40' fill='%2360fbaf' font-size='24'%3EVANQUISH%3C/text%3E%3C/svg%3E"></a></div><a class="product-title" href="/shop/p/200k-challenge">200k Challenge</a><div class="productDetails"><div class="product-purchase-controls-wrapper"><button type="button" class="sqs-add-to-cart-button"><span class="sqs-add-to-cart-button-inner"><span class="add-to-cart-text">Purchase</span></span></button></div></div></div></div></div></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var PLANS = [
+        { id: "block-yui_3_17_2_1_1792019573642_531", balance: 10000 },
+        { id: "block-e749061536072ca7a477", balance: 25000 },
+        { id: "block-52afccbe1e7bc4af2ad1", balance: 50000 },
+        { id: "block-3518851e187dc811896e", balance: 100000, featured: true },
+        { id: "block-7cfb2d800bb6a3b2bfbd", balance: 200000 }
+      ];
+
+      function editing() {
+        var body = document.body;
+        return !body || body.classList.contains("sqs-edit-mode") || body.classList.contains("sqs-edit-mode-active") || window.location.pathname.indexOf("/config") === 0;
+      }
+
+      function money(amount) {
+        var n = Number(amount);
+        if (!isFinite(n)) return "";
+        var cents = Math.round(n * 100) % 100 !== 0;
+        return n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 });
+      }
+
+      function icon(body) {
+        return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' + body + "</svg>";
+      }
+
+      var ICONS = {
+        target: icon('<circle cx="12" cy="12" r="7.25"/><circle cx="12" cy="12" r="2.25"/><path d="M12 2.75v2.5M12 18.75v2.5M2.75 12h2.5M18.75 12h2.5"/>'),
+        daily: icon('<path d="M3 7.5 9.2 13l3.6-3.6L21 17"/><path d="M15 17h6v-6"/>'),
+        loss: icon('<path d="M12 3.5v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20.5h14"/>'),
+        days: icon('<rect x="4" y="4.5" width="16" height="15.5" rx="2"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>'),
+        calendar: icon('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.25v3.5M16 3.25v3.5"/>'),
+        chart: icon('<path d="M4 19.5h16"/><path d="M7 19.5v-6M12 19.5V6.5M17 19.5v-9"/>'),
+        reward: icon('<rect x="2.75" y="6" width="18.5" height="12" rx="2"/><circle cx="12" cy="12" r="2.25"/>')
+      };
+
+      function readOffer(product) {
+        var data = {};
+        try { data = JSON.parse(product.getAttribute("data-product") || "{}"); } catch (e) {}
+        var list = data.price && data.price.value;
+        var sale = data.onSale && data.salePrice && data.salePrice.value;
+        return { list: list, sale: sale || list, onSale: !!(data.onSale && sale && Number(sale) < Number(list)) };
+      }
+
+      function metric(svg, label, primary, secondary) {
+        var node = document.createElement("div");
+        node.className = "metric";
+        node.innerHTML = '<span class="name">' + svg + label + '</span><span class="value">' + primary + (secondary || "") + "</span>";
+        return node;
+      }
+
+      function buildCard(product, plan) {
+        var offer = readOffer(product);
+        var balance = plan.balance;
+        var content = product.querySelector(".product-block-content") || product;
+        var purchase = product.querySelector(".product-purchase-controls-wrapper") || product.querySelector(".sqs-add-to-cart-button-wrapper");
+        var button = product.querySelector(".sqs-add-to-cart-button");
+        var text = product.querySelector(".add-to-cart-text");
+
+        product.classList.add("card");
+        product.setAttribute("data-balance", String(balance));
+        product.setAttribute("aria-label", money(balance) + " account" + (plan.featured ? ", best value" : ""));
+        if (plan.featured) product.classList.add("featured");
+
+        Array.prototype.forEach.call(product.querySelectorAll("a.product-title, a.image-styles-wrapper, a.product-status-link, a[href*='/shop/p/']"), function (link) {
+          link.removeAttribute("href");
+          link.setAttribute("tabindex", "-1");
+        });
+
+        var head = document.createElement("header");
+        head.className = "card-head";
+        head.innerHTML = '<p class="eyebrow">Account</p><h2 class="balance">' + money(balance) + "</h2>";
+
+        var rows = [
+          metric(ICONS.target, "Profit Target", '<span class="pct">10%</span>', '<span class="dollars">' + money(balance * 0.1) + "</span>"),
+          metric(ICONS.daily, "Max Daily Loss", '<span class="pct">5%</span>', '<span class="dollars">' + money(balance * 0.05) + "</span>"),
+          metric(ICONS.loss, "Max Loss", '<span class="pct">10%</span>', '<span class="dollars">' + money(balance * 0.1) + "</span>"),
+          metric(ICONS.days, "Min Trading Days", '<span class="pct">None</span>'),
+          metric(ICONS.calendar, "Trading Period", '<span class="pct">Unlimited</span>'),
+          metric(ICONS.chart, "Consistency", '<span class="pct">None</span>'),
+          metric(ICONS.reward, "Rewards", '<span class="pill">90%</span><span class="hint">of profits</span>')
+        ];
+        rows[6].querySelector(".value").classList.add("has-hint");
+
+        var price = document.createElement("div");
+        price.className = "price-cell";
+        price.innerHTML = '<p class="fee-note">One-time fee (non-refundable)</p><p class="price">' + money(offer.sale) + "</p>" + (offer.onSale ? '<p class="price-was">' + money(offer.list) + "</p>" : "");
+
+        content.appendChild(head);
+        rows.forEach(function (row) { content.appendChild(row); });
+        content.appendChild(price);
+
+        if (purchase) {
+          purchase.classList.add("buy");
+          content.appendChild(purchase);
+        }
+
+        var keep = [head, price];
+        rows.forEach(function (row) { keep.push(row); });
+        if (purchase) keep.push(purchase);
+        Array.prototype.forEach.call(content.children, function (node) {
+          if (keep.indexOf(node) !== -1) return;
+          if (purchase && (node === purchase || node.contains(purchase) || purchase.contains(node))) return;
+          node.classList.add("vq-off");
+          node.hidden = true;
+          node.style.setProperty("display", "none", "important");
+        });
+        if (text) text.textContent = "Start now";
+        if (button) button.setAttribute("aria-label", "Start now with the " + money(balance) + " account");
+        if (plan.featured) {
+          var badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = "Best Value";
+          product.appendChild(badge);
+        }
+      }
+
+      function labels() {
+        var wrap = document.createElement("div");
+        wrap.className = "labels";
+        wrap.setAttribute("aria-hidden", "true");
+        var items = [
+          ["", ""],
+          [ICONS.target, "Profit Target"],
+          [ICONS.daily, "Max Daily Loss"],
+          [ICONS.loss, "Max Loss"],
+          [ICONS.days, "Min Trading Days"],
+          [ICONS.calendar, "Trading Period"],
+          [ICONS.chart, "Consistency"],
+          [ICONS.reward, "Rewards"],
+          ["", "One-time fee (non-refundable)"],
+          ["", ""]
+        ];
+        items.forEach(function (item, index) {
+          var cell = document.createElement("div");
+          if (item[1] && index !== 8) {
+            cell.className = "label";
+            cell.innerHTML = item[0] + "<span>" + item[1] + "</span>";
+          } else if (index === 8) {
+            cell.className = "label fee";
+            cell.textContent = item[1];
+          }
+          wrap.appendChild(cell);
+        });
+        return wrap;
+      }
+
+      function init(found) {
+        if (document.querySelector(".pricing")) return;
+        var first = found[0].block;
+        var engine = first.closest(".fluid-engine");
+        var pricing = document.createElement("section");
+        var nav = document.createElement("div");
+        var grid = document.createElement("div");
+        pricing.className = "pricing";
+        pricing.setAttribute("aria-label", "Account pricing");
+        nav.className = "plan-nav";
+        grid.className = "pricing-grid";
+        grid.tabIndex = 0;
+        grid.setAttribute("aria-label", "Account plans. Swipe sideways to see the next size.");
+        grid.appendChild(labels());
+
+        found.forEach(function (item, index) {
+          var product = item.block.querySelector(".product-block") || item.block;
+          buildCard(product, item.plan);
+          grid.appendChild(product);
+          var dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "plan-dot" + (index === 0 ? " is-active" : "");
+          dot.setAttribute("aria-label", "Show the " + money(item.plan.balance) + " account");
+          if (index === 0) dot.setAttribute("aria-current", "true");
+          nav.appendChild(dot);
+        });
+
+        var intro = document.createElement("header");
+        var pill = document.createElement("p");
+        var title = document.createElement("h1");
+        var sub = document.createElement("p");
+        intro.className = "pricing-intro";
+        pill.className = "plan-pill";
+        pill.textContent = "Vanquish 1-step";
+        title.className = "pricing-title";
+        title.textContent = "Pick a plan and customize it";
+        sub.className = "pricing-sub";
+        sub.textContent = "No monthly subscription or account activation fees";
+        intro.appendChild(pill);
+        intro.appendChild(title);
+        intro.appendChild(sub);
+        pricing.appendChild(intro);
+        pricing.appendChild(nav);
+        pricing.appendChild(grid);
+        var anchor = engine || first;
+        anchor.parentNode.insertBefore(pricing, anchor);
+        if (engine) engine.style.display = "none";
+
+        pricing.addEventListener("click", function (event) {
+          var link = event.target.closest("a");
+          if (!link || link.closest(".sqs-add-to-cart-button")) return;
+          if (link.classList.contains("product-title") || link.classList.contains("image-styles-wrapper") || link.classList.contains("product-status-link")) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }, true);
+
+        var cards = Array.prototype.slice.call(grid.querySelectorAll(".card"));
+        var dots = Array.prototype.slice.call(nav.children);
+
+        function ordered() {
+          return cards.slice().sort(function (a, b) { return a.getBoundingClientRect().left - b.getBoundingClientRect().left; });
+        }
+
+        function update() {
+          var origin = grid.getBoundingClientRect().left;
+          var best = Infinity;
+          var active = 0;
+          ordered().forEach(function (card, i) {
+            var distance = Math.abs(card.getBoundingClientRect().left - origin);
+            if (distance < best) { best = distance; active = i; }
+          });
+          dots.forEach(function (dot, i) {
+            var on = i === active;
+            dot.classList.toggle("is-active", on);
+            if (on) dot.setAttribute("aria-current", "true");
+            else dot.removeAttribute("aria-current");
+          });
+        }
+
+        dots.forEach(function (dot, index) {
+          dot.addEventListener("click", function () {
+            var card = ordered()[index];
+            if (!card) return;
+            grid.scrollTo({
+              left: grid.scrollLeft + (card.getBoundingClientRect().left - grid.getBoundingClientRect().left),
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+            });
+          });
+        });
+
+        grid.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+        update();
+
+        if (document.body.getAttribute("data-preview") === "local") {
+          pricing.addEventListener("click", function (event) {
+            var button = event.target.closest(".sqs-add-to-cart-button");
+            if (!button || !button.closest(".product-block")) return;
+            var label = button.querySelector(".add-to-cart-text");
+            if (label) label.textContent = "Added!";
+          });
+        }
+      }
+
+      function boot(tries) {
+        if (editing()) return;
+        var found = PLANS.map(function (plan) {
+          return { plan: plan, block: document.getElementById(plan.id) };
+        }).filter(function (item) { return item.block; });
+        if (found.length < PLANS.length && tries < 25) {
+          window.setTimeout(function () { boot(tries + 1); }, 200);
+          return;
+        }
+        if (!found.length) return;
+        init(found);
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { boot(0); });
+      else boot(0);
+    })();
+  </script>
+</body>
+</html>

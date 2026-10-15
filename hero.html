@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Vanquish Trading</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --accent: #60fbaf;
+      --accent-ink: #042117;
+      --text: #ffffff;
+      --muted: #b5b5b5;
+      --line: rgba(255, 255, 255, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      container-type: inline-size;
+      container-name: hero;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 56px 16px 48px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      text-align: center;
+      background:
+        radial-gradient(58% 36% at 50% 22%, rgba(96, 251, 175, 0.14), transparent 68%),
+        var(--bg);
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 920px;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: clamp(32px, 8.4cqi, 44px);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1.05;
+      text-wrap: balance;
+    }
+
+    .hero-lead,
+    .hero-accent {
+      display: block;
+    }
+
+    .hero-accent {
+      margin-top: 10px;
+      color: var(--accent);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+      margin-top: 32px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-primary {
+      border: 0;
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .btn-primary:active { background: #35e696; }
+
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn-ghost:active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 3px;
+    }
+
+    .platforms {
+      width: 100%;
+      padding-top: 64px;
+    }
+
+    .platforms-label {
+      margin: 0 0 20px;
+      font-size: clamp(20px, 2vw, 26px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .platform-list {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .platform {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      min-width: 96px;
+    }
+
+    .platform-icon {
+      width: 84px;
+      height: 84px;
+      border-radius: 22px;
+      background-image: url("mt4mt5.png");
+      background-repeat: no-repeat;
+      background-size: 364.672% 205.128%;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .platform-icon-mt5 { background-position: 22.174% 42.547%; }
+    .platform-icon-mt4 { background-position: 81.378% 42.547%; }
+
+    .platform span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    @container hero (min-width: 560px) {
+      .hero { padding-top: 72px; padding-bottom: 64px; }
+      .hero-actions { max-width: none; margin-top: 36px; }
+      .btn { min-width: 168px; }
+      .platforms { padding-top: 80px; }
+      .platform-icon { width: 104px; height: 104px; border-radius: 26px; }
+      .platform-list { gap: 40px; }
+    }
+
+    @container hero (min-width: 800px) {
+      .hero-title { font-size: clamp(44px, 4.4cqi, 58px); }
+      .hero-lead { white-space: nowrap; }
+    }
+
+    @container hero (max-width: 420px) {
+      .hero-actions { flex-direction: column; }
+      .btn { width: 100%; }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn-primary:hover { background: #49f0a3; }
+      .btn-ghost:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <h1 class="hero-title" id="hero-title">
+        <span class="hero-lead">Vanquish Trading is going to be the</span>
+        <span class="hero-accent">#1 CFD prop firm</span>
+      </h1>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="index.html">Pick your plan</a>
+        <a class="btn btn-ghost" href="#join">Join us</a>
+      </div>
+    </div>
+
+    <div class="platforms">
+      <h2 class="platforms-label">Supported platforms</h2>
+      <ul class="platform-list">
+        <li class="platform">
+          <span class="platform-icon platform-icon-mt5" role="img" aria-label="MetaTrader 5"></span>
+          <span>MetaTrader 5</span>
+        </li>
+        <li class="platform">
+          <span class="platform-icon platform-icon-mt4" role="img" aria-label="MetaTrader 4"></span>
+          <span>MetaTrader 4</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+</body>
+</html>
