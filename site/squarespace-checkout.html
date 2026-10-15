@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Squarespace checkout script</title>
+</head>
+<body>
+  <!--
+    Paste ONLY the script below into:
+    Squarespace → Settings → Advanced → Code Injection → Footer
+
+    Do not paste this whole page.
+
+    Then, in Squarespace:
+    Settings → Selling → Cart → turn on "Skip cart page".
+
+    Each Start now button on the front site links to that product with ?buy=1,
+    for example:
+    https://vanquishtrading.io/shop/p/10k-challenge?buy=1
+
+    This script runs on that product page, clears any other cart items,
+    clicks the real purchase button, and opens Squarespace checkout.
+    If a product URL on your store is different, change the matching
+    link in site/index.html. Keep ?buy=1 on the end.
+  -->
+  <script>
+    (function () {
+      if (new URLSearchParams(window.location.search).get("buy") !== "1") return;
+      if (window.location.pathname.indexOf("/checkout") !== -1) return;
+      if (window.location.pathname.indexOf("/config") !== -1) return;
+
+      var root = document.documentElement;
+      var body = document.body;
+      if ((root && root.className.indexOf("sqs-edit-mode") !== -1) || (body && body.className.indexOf("sqs-edit-mode") !== -1)) return;
+
+      var started = false;
+
+      function purchaseButton() {
+        return document.querySelector(".sqs-add-to-cart-button");
+      }
+
+      function emptyCart() {
+        return fetch("/api/commerce/shopping-cart", { credentials: "same-origin" })
+          .then(function (response) { return response.ok ? response.json() : null; })
+          .then(function (cart) {
+            var entries = (cart && (cart.entries || cart.items)) || [];
+            return entries.reduce(function (chain, entry) {
+              var id = entry.id || entry.entryId;
+              if (!id) return chain;
+              return chain.then(function () {
+                return fetch("/api/commerce/shopping-cart/entries/" + encodeURIComponent(id), {
+                  method: "DELETE",
+                  credentials: "same-origin"
+                });
+              });
+            }, Promise.resolve());
+          })
+          .catch(function () {});
+      }
+
+      function begin() {
+        if (started) return;
+        var button = purchaseButton();
+        if (!button) return;
+        started = true;
+        button.click();
+        window.setTimeout(function () {
+          if (window.location.pathname.indexOf("/checkout") === -1) {
+            window.location.href = "/checkout";
+          }
+        }, 1200);
+      }
+
+      function boot() {
+        emptyCart().then(function () {
+          var tries = 0;
+          var timer = window.setInterval(function () {
+            tries += 1;
+            if (purchaseButton()) {
+              window.clearInterval(timer);
+              begin();
+            } else if (tries > 30) {
+              window.clearInterval(timer);
+            }
+          }, 200);
+        });
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+      else boot();
+      window.addEventListener("mercury:load", boot);
+    })();
+  </script>
+</body>
+</html>
