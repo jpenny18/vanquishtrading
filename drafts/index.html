@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Account pricing</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #141414;
+      --accent: #60fbaf;
+      --accent-ink: #042117;
+      --text: #ffffff;
+      --muted: #a3a3a3;
+      --line: rgba(255, 255, 255, 0.1);
+      --card-line: rgba(255, 255, 255, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .pricing {
+      container-type: inline-size;
+      container-name: pricing;
+      width: 100%;
+      padding: 36px 16px 40px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+
+    .pricing p,
+    .pricing h1,
+    .pricing h2 { margin: 0; }
+
+    .pricing-intro {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      max-width: 720px;
+      margin: 0 auto 18px;
+      text-align: center;
+    }
+
+    .plan-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .pricing-title {
+      font-size: clamp(30px, 2vw + 20px, 44px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+    }
+
+    .pricing-sub {
+      max-width: 34em;
+      color: #b5b5b5;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      flex: none;
+      display: block;
+    }
+
+    .pricing-grid {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 2px 0 4px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .pricing-grid::-webkit-scrollbar { display: none; }
+
+    .plan-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin: 0 auto 16px;
+    }
+
+    .plan-dot {
+      width: 7px;
+      height: 7px;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.28);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .plan-dot.is-active {
+      width: 18px;
+      background: var(--accent);
+    }
+
+    .plan-dot:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 3px;
+    }
+
+    .labels { display: none; }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex: 0 0 100%;
+      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      margin-top: 14px;
+      padding: 22px 16px 16px;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      background: var(--card);
+      border: 1px solid var(--card-line);
+      border-radius: 20px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .card[data-balance="10000"] { order: 1; }
+    .card[data-balance="25000"] { order: 2; }
+    .card[data-balance="50000"] { order: 3; }
+    .card[data-balance="100000"] { order: 4; }
+    .card[data-balance="200000"] { order: 5; }
+
+    .card.featured {
+      padding-top: 26px;
+      border-color: rgba(96, 251, 175, 0.8);
+      background:
+        radial-gradient(90% 42% at 50% 0%, rgba(96, 251, 175, 0.38), rgba(96, 251, 175, 0.08) 46%, transparent 72%),
+        var(--card);
+      box-shadow:
+        inset 0 1px 0 rgba(96, 251, 175, 0.35),
+        0 18px 50px rgba(96, 251, 175, 0.07);
+    }
+
+    .badge {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .card-head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-bottom: 16px;
+    }
+
+    .eyebrow {
+      color: #c8c8c8;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .balance {
+      margin-top: 4px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 52px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: #f2f2f2;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .name .icon { color: #e8e8e8; }
+
+    .value {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .value:has(.hint) {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pct {
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .dollars {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(96, 251, 175, 0.14);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .price-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: auto;
+      padding-top: 16px;
+      text-align: center;
+    }
+
+    .fee-note {
+      max-width: 180px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .price {
+      color: var(--text);
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cta {
+      appearance: none;
+      -webkit-appearance: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cta:active { background: #35e696; }
+
+    @media (hover: hover) and (pointer: fine) {
+      .cta:hover { background: #49f0a3; }
+    }
+
+    @media (max-width: 359px) {
+      .pricing {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
+    @container pricing (max-width: 340px) {
+      .card { padding-left: 12px; padding-right: 12px; }
+      .metric { gap: 8px; }
+      .name { font-size: 13px; gap: 8px; }
+      .pct { font-size: 14px; }
+      .balance { font-size: 30px; }
+      .price { font-size: 30px; }
+      .icon { width: 16px; height: 16px; }
+    }
+
+    .cta:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 3px;
+    }
+
+    @container pricing (min-width: 700px) {
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        max-width: 840px;
+        margin: 0 auto;
+        padding: 0;
+        overflow: visible;
+        scroll-snap-type: none;
+      }
+
+      .card {
+        flex: initial;
+        width: 100%;
+        margin-top: 0;
+        scroll-snap-align: none;
+        scroll-snap-stop: normal;
+        order: 0;
+      }
+
+      .card.featured { order: -1; }
+
+      .pricing-intro { margin-bottom: 36px; }
+
+      .plan-nav { display: none; }
+    }
+
+    @container pricing (min-width: 1060px) {
+      @supports (grid-template-rows: subgrid) {
+        .pricing-grid {
+          grid-template-columns: 196px repeat(5, minmax(0, 1fr));
+          grid-template-rows: 112px repeat(7, 60px) 84px 72px;
+          column-gap: 12px;
+          row-gap: 0;
+          max-width: 1180px;
+          align-items: stretch;
+        }
+
+        .labels {
+          display: grid;
+          grid-column: 1;
+          grid-row: 1 / -1;
+          grid-template-rows: subgrid;
+        }
+
+        .labels > * {
+          display: flex;
+          align-items: center;
+          min-width: 0;
+        }
+
+        .label {
+          gap: 10px;
+          color: #f3f3f3;
+          font-size: 14px;
+          font-weight: 600;
+          line-height: 1.25;
+        }
+
+        .label .icon { color: #dedede; }
+
+        .labels .fee {
+          max-width: 150px;
+          color: var(--muted);
+          font-size: 13px;
+          font-weight: 500;
+          line-height: 1.35;
+        }
+
+        .card,
+        .card.featured {
+          display: grid;
+          grid-row: 1 / -1;
+          grid-template-rows: subgrid;
+          flex: initial;
+          width: auto;
+          margin-top: 0;
+          order: 0;
+          padding: 0;
+          scroll-snap-align: none;
+          scroll-snap-stop: normal;
+        }
+
+        .card[data-balance="200000"] { grid-column: 2; }
+        .card[data-balance="100000"] { grid-column: 3; }
+        .card[data-balance="50000"] { grid-column: 4; }
+        .card[data-balance="25000"] { grid-column: 5; }
+        .card[data-balance="10000"] { grid-column: 6; }
+
+        .card-head,
+        .metric,
+        .price-cell {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+
+        .card-head {
+          padding-bottom: 0;
+        }
+
+        .balance { font-size: 26px; }
+
+        .metric {
+          justify-content: center;
+          min-height: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+          border-top: 0;
+        }
+
+        .metric .name {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
+        .value,
+        .value:has(.hint) {
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          text-align: center;
+        }
+
+        .price-cell {
+          position: relative;
+          margin-top: 0;
+          padding-top: 0;
+        }
+
+        .fee-note {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
+        .price { font-size: 30px; }
+
+        .card > .cta {
+          align-self: center;
+          width: calc(100% - 28px);
+          min-height: 46px;
+          margin: 0 auto;
+        }
+
+        .card {
+          transition: border-color 160ms ease;
+        }
+
+        .card:hover { border-color: rgba(255, 255, 255, 0.22); }
+        .card.featured:hover { border-color: var(--accent); }
+      }
+    }
+
+    @container pricing (min-width: 1280px) {
+      @supports (grid-template-rows: subgrid) {
+        .balance { font-size: 30px; }
+        .price { font-size: 32px; }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card,
+      .cta,
+      .plan-dot { transition: none; }
+
+      .pricing-grid { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-target" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="7.25"/>
+        <circle cx="12" cy="12" r="2.25"/>
+        <path d="M12 2.75v2.5M12 18.75v2.5M2.75 12h2.5M18.75 12h2.5"/>
+      </g>
+    </symbol>
+    <symbol id="i-daily" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7.5 9.2 13l3.6-3.6L21 17"/>
+        <path d="M15 17h6v-6"/>
+      </g>
+    </symbol>
+    <symbol id="i-loss" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3.5v12"/>
+        <path d="m7 11 5 5 5-5"/>
+        <path d="M5 20.5h14"/>
+      </g>
+    </symbol>
+    <symbol id="i-days" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="4.5" width="16" height="15.5" rx="2"/>
+        <path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>
+      </g>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="5" width="17" height="15" rx="2"/>
+        <path d="M3.5 10h17M8 3.25v3.5M16 3.25v3.5"/>
+      </g>
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5h16"/>
+        <path d="M7 19.5v-6M12 19.5V6.5M17 19.5v-9"/>
+      </g>
+    </symbol>
+    <symbol id="i-reward" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2.75" y="6" width="18.5" height="12" rx="2"/>
+        <circle cx="12" cy="12" r="2.25"/>
+        <path d="M6 9.25v.01M18 14.75v.01"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <section class="pricing" aria-label="Account pricing">
+    <header class="pricing-intro">
+      <p class="plan-pill">Vanquish 1-step</p>
+      <h1 class="pricing-title">Pick a plan and customize it</h1>
+      <p class="pricing-sub">No monthly subscription or account activation fees</p>
+    </header>
+    <div class="plan-nav">
+      <button type="button" class="plan-dot is-active" aria-label="Show the $10,000 account"></button>
+      <button type="button" class="plan-dot" aria-label="Show the $25,000 account"></button>
+      <button type="button" class="plan-dot" aria-label="Show the $50,000 account"></button>
+      <button type="button" class="plan-dot" aria-label="Show the $100,000 account"></button>
+      <button type="button" class="plan-dot" aria-label="Show the $200,000 account"></button>
+    </div>
+    <div class="pricing-grid" tabindex="0" aria-label="Account plans. Swipe sideways to see the next size.">
+      <div class="labels" aria-hidden="true">
+        <div></div>
+        <div class="label">
+          <svg class="icon"><use href="#i-target"/></svg>
+          <span>Profit Target</span>
+        </div>
+        <div class="label">
+          <svg class="icon"><use href="#i-daily"/></svg>
+          <span>Max Daily Loss</span>
+        </div>
+        <div class="label">
+          <svg class="icon"><use href="#i-loss"/></svg>
+          <span>Max Loss</span>
+        </div>
+        <div class="label">
+          <svg class="icon"><use href="#i-days"/></svg>
+          <span>Min Trading Days</span>
+        </div>
+        <div class="label">
+          <svg class="icon"><use href="#i-calendar"/></svg>
+          <span>Trading Period</span>
+        </div>
+        <div class="label">
+          <svg class="icon"><use href="#i-chart"/></svg>
+          <span>Consistency</span>
+        </div>
+        <div class="label">
+          <svg class="icon"><use href="#i-reward"/></svg>
+          <span>Rewards</span>
+        </div>
+        <div class="label fee">One-time fee (non-refundable)</div>
+        <div></div>
+      </div>
+
+      <article class="card" data-balance="200000" data-price="499" aria-label="$200,000 account">
+        <header class="card-head">
+          <p class="eyebrow">Account</p>
+          <h2 class="balance">$200,000</h2>
+        </header>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Profit Target</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$20,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-daily"/></svg>Max Daily Loss</span>
+          <span class="value"><span class="pct">5%</span><span class="dollars">$10,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-loss"/></svg>Max Loss</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$20,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-days"/></svg>Min Trading Days</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Trading Period</span>
+          <span class="value"><span class="pct">Unlimited</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>Consistency</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-reward"/></svg>Rewards</span>
+          <span class="value"><span class="pill">90%</span><span class="hint">of profits</span></span>
+        </div>
+        <div class="price-cell">
+          <p class="fee-note">One-time fee (non-refundable)</p>
+          <p class="price">$499</p>
+        </div>
+        <button type="button" class="cta" aria-label="Start now with the $200,000 account">Start now</button>
+      </article>
+
+      <article class="card featured" data-balance="100000" data-price="399" aria-label="$100,000 account, best value">
+        <span class="badge">Best Value</span>
+        <header class="card-head">
+          <p class="eyebrow">Account</p>
+          <h2 class="balance">$100,000</h2>
+        </header>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Profit Target</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$10,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-daily"/></svg>Max Daily Loss</span>
+          <span class="value"><span class="pct">5%</span><span class="dollars">$5,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-loss"/></svg>Max Loss</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$10,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-days"/></svg>Min Trading Days</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Trading Period</span>
+          <span class="value"><span class="pct">Unlimited</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>Consistency</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-reward"/></svg>Rewards</span>
+          <span class="value"><span class="pill">90%</span><span class="hint">of profits</span></span>
+        </div>
+        <div class="price-cell">
+          <p class="fee-note">One-time fee (non-refundable)</p>
+          <p class="price">$399</p>
+        </div>
+        <button type="button" class="cta" aria-label="Start now with the $100,000 account">Start now</button>
+      </article>
+
+      <article class="card" data-balance="50000" data-price="249" aria-label="$50,000 account">
+        <header class="card-head">
+          <p class="eyebrow">Account</p>
+          <h2 class="balance">$50,000</h2>
+        </header>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Profit Target</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$5,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-daily"/></svg>Max Daily Loss</span>
+          <span class="value"><span class="pct">5%</span><span class="dollars">$2,500</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-loss"/></svg>Max Loss</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$5,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-days"/></svg>Min Trading Days</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Trading Period</span>
+          <span class="value"><span class="pct">Unlimited</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>Consistency</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-reward"/></svg>Rewards</span>
+          <span class="value"><span class="pill">90%</span><span class="hint">of profits</span></span>
+        </div>
+        <div class="price-cell">
+          <p class="fee-note">One-time fee (non-refundable)</p>
+          <p class="price">$249</p>
+        </div>
+        <button type="button" class="cta" aria-label="Start now with the $50,000 account">Start now</button>
+      </article>
+
+      <article class="card" data-balance="25000" data-price="149" aria-label="$25,000 account">
+        <header class="card-head">
+          <p class="eyebrow">Account</p>
+          <h2 class="balance">$25,000</h2>
+        </header>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Profit Target</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$2,500</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-daily"/></svg>Max Daily Loss</span>
+          <span class="value"><span class="pct">5%</span><span class="dollars">$1,250</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-loss"/></svg>Max Loss</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$2,500</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-days"/></svg>Min Trading Days</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Trading Period</span>
+          <span class="value"><span class="pct">Unlimited</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>Consistency</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-reward"/></svg>Rewards</span>
+          <span class="value"><span class="pill">90%</span><span class="hint">of profits</span></span>
+        </div>
+        <div class="price-cell">
+          <p class="fee-note">One-time fee (non-refundable)</p>
+          <p class="price">$149</p>
+        </div>
+        <button type="button" class="cta" aria-label="Start now with the $25,000 account">Start now</button>
+      </article>
+
+      <article class="card" data-balance="10000" data-price="49" aria-label="$10,000 account">
+        <header class="card-head">
+          <p class="eyebrow">Account</p>
+          <h2 class="balance">$10,000</h2>
+        </header>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Profit Target</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$1,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-daily"/></svg>Max Daily Loss</span>
+          <span class="value"><span class="pct">5%</span><span class="dollars">$500</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-loss"/></svg>Max Loss</span>
+          <span class="value"><span class="pct">10%</span><span class="dollars">$1,000</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-days"/></svg>Min Trading Days</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Trading Period</span>
+          <span class="value"><span class="pct">Unlimited</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>Consistency</span>
+          <span class="value"><span class="pct">None</span></span>
+        </div>
+        <div class="metric">
+          <span class="name"><svg class="icon" aria-hidden="true"><use href="#i-reward"/></svg>Rewards</span>
+          <span class="value"><span class="pill">90%</span><span class="hint">of profits</span></span>
+        </div>
+        <div class="price-cell">
+          <p class="fee-note">One-time fee (non-refundable)</p>
+          <p class="price">$49</p>
+        </div>
+        <button type="button" class="cta" aria-label="Start now with the $10,000 account">Start now</button>
+      </article>
+    </div>
+  </section>
+  <script>
+    (function () {
+      var scroller = document.querySelector(".pricing-grid");
+      var dots = Array.prototype.slice.call(document.querySelectorAll(".plan-dot"));
+      if (!scroller || !dots.length) return;
+
+      function cards() {
+        return Array.prototype.slice.call(scroller.querySelectorAll(".card")).sort(function (a, b) {
+          return a.getBoundingClientRect().left - b.getBoundingClientRect().left;
+        });
+      }
+
+      function scrollLeftFor(card) {
+        return scroller.scrollLeft + (card.getBoundingClientRect().left - scroller.getBoundingClientRect().left);
+      }
+
+      function activeIndex() {
+        var origin = scroller.getBoundingClientRect().left;
+        var list = cards();
+        var index = 0;
+        var best = Infinity;
+        list.forEach(function (card, i) {
+          var distance = Math.abs(card.getBoundingClientRect().left - origin);
+          if (distance < best) {
+            best = distance;
+            index = i;
+          }
+        });
+        return index;
+      }
+
+      function update() {
+        var index = activeIndex();
+        dots.forEach(function (dot, i) {
+          var on = i === index;
+          dot.classList.toggle("is-active", on);
+          if (on) dot.setAttribute("aria-current", "true");
+          else dot.removeAttribute("aria-current");
+        });
+      }
+
+      scroller.addEventListener("scroll", update, { passive: true });
+      window.addEventListener("resize", update);
+
+      dots.forEach(function (dot, i) {
+        dot.addEventListener("click", function () {
+          var list = cards();
+          if (!list[i]) return;
+          scroller.scrollTo({
+            left: scrollLeftFor(list[i]),
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+          });
+        });
+      });
+
+      update();
+    })();
+  </script>
+</body>
+</html>
